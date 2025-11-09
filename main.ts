@@ -1,134 +1,255 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, ItemView, WorkspaceLeaf } from 'obsidian';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 
-// Remember to rename these classes and interfaces!
+export default class GreekTyperPlugin extends Plugin {
+	private isLiveTyping = true;
 
-interface MyPluginSettings {
-	mySetting: string;
-}
+	// Greek letter map (basic letters)
+	private readonly greekLettersMap: Record<string, string> = {
+		a: 'α', b: 'β', g: 'γ', d: 'δ', e: 'ε', z: 'ζ', h: 'η',
+		i: 'ι', k: 'κ', l: 'λ', m: 'μ', n: 'ν', x: 'ξ', o: 'ο',
+		p: 'π', r: 'ρ', s: 'σ', t: 'τ', u: 'υ', w: 'ω',
+		th: 'θ', ph: 'φ', ch: 'χ', ps: 'ψ',
+		A: 'Α', B: 'Β', G: 'Γ', D: 'Δ', E: 'Ε', Z: 'Ζ', H: 'Η',
+		I: 'Ι', K: 'Κ', L: 'Λ', M: 'Μ', N: 'Ν', X: 'Ξ', O: 'Ο',
+		P: 'Π', R: 'Ρ', S: 'Σ', T: 'Τ', U: 'Υ', W: 'Ω',
+		Th: 'Θ', Ph: 'Φ', Ch: 'Χ', Ps: 'Ψ',
+	};
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
+	// Greek polytonic diacritics map (keyed sequences)
+	private readonly greekDiacriticsMap: Record<string, string> = {
+		"a": "α", "a/": "ά", "a\\": "ὰ", "a=": "ᾶ",
+		"a)": "ἀ", "a(": "ἁ", "a)/": "ἄ", "a(\\": "ἃ", "a(=": "ἇ", "a)=": "ἆ",
+		"a)|": "ᾀ", "a(|": "ᾁ", "a)/|": "ᾄ", "a(\\|": "ᾃ", "a)=|": "ᾆ", "a(=|": "ᾇ",
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+		"e": "ε", "e/": "έ", "e\\": "ὲ", "e)": "ἐ", "e(": "ἑ", "e)/": "ἔ", "e(\\": "ἓ",
+		"h": "η", "h/": "ή", "h\\": "ὴ", "h=": "ῆ", "h)": "ἠ", "h(": "ἡ", "h)/": "ἤ", "h(\\": "ἣ", "h(=": "ἧ", "h)=": "ἦ",
+		"h)|": "ᾐ", "h(|": "ᾑ", "h)/|": "ᾔ", "h(\\|": "ᾓ", "h)=|": "ᾖ", "h(=|": "ᾗ",
+
+		"i": "ι", "i/": "ί", "i\\": "ὶ", "i=": "ῖ", "i+": "ϊ", "i/+": "ΐ", "i\\+": "ῒ", "i=+": "ῗ",
+		"i)": "ἰ", "i(": "ἱ", "i)/": "ἴ", "i(\\": "ἳ", "i(=": "ἷ", "i)=": "ἶ",
+
+		"o": "ο", "o/": "ό", "o\\": "ὸ", "o)": "ὀ", "o(": "ὁ", "o)/": "ὄ", "o(\\": "ὃ",
+		"u": "υ", "u/": "ύ", "u\\": "ὺ", "u=": "ῦ", "u+": "ϋ", "u/+": "ΰ", "u\\+": "ῢ", "u=+": "ῧ",
+		"u)": "ὐ", "u(": "ὑ", "u)/": "ὔ", "u(\\": "ὓ", "u(=": "ὗ", "u)=": "ὖ",
+		"w": "ω", "w/": "ώ", "w\\": "ὼ", "w=": "ῶ", "w)": "ὠ", "w(": "ὡ", "w)/": "ὤ", "w(\\": "ὣ", "w(=": "ὧ", "w)=": "ὦ",
+		"w)|": "ᾠ", "w(|": "ᾡ", "w)/|": "ᾤ", "w(\\|": "ᾣ", "w)=|": "ᾦ", "w(=|": "ᾧ",
+
+		"th": "θ", "ph": "φ", "ch": "χ", "ps": "ψ",
+	};
+
+	// Plain Greek conversion (letters only)
+	private toGreek(text: string): string {
+		const keys = Object.keys(this.greekLettersMap).sort((a, b) => b.length - a.length);
+		for (const key of keys) {
+			text = text.split(key).join(this.greekLettersMap[key]);
+		}
+		// Final sigma
+		text = text.replace(/σ(?=\s|$|[.,;!?:·’])/g, 'ς');
+		return text;
+	}
+
+	// Full polytonic Greek conversion
+	private toGreekWithDiacritics(input: string): string {
+		let output = "";
+		let i = 0;
+
+		while (i < input.length) {
+			let ch = input[i];
+			if (!/[a-zA-Z]/.test(ch)) {
+				output += ch;
+				i++;
+				continue;
+			}
+
+			let seq = ch;
+			let j = i + 1;
+			while (j < input.length && /[\\/=\(\)\|\+]/.test(input[j])) {
+				seq += input[j];
+				j++;
+			}
+
+			let greek = this.greekDiacriticsMap[seq.toLowerCase()];
+			output += greek ? greek : seq;
+			i = j;
+		}
+
+		// Final sigma
+		output = output.replace(/σ(?=\s|$|[.,;!?:·’])/g, 'ς');
+		return output;
+	}
+
+
+
 
 	async onload() {
-		await this.loadSettings();
+		console.log('GreekTyper plugin loaded');
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (_evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+		// Greek Typing Guide
+		  // Register the guide view
+    this.registerView(TYPING_GUIDE_VIEW, (leaf) => new GreekTyperGuideView(leaf));
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+    // Check if the guide is already open
+    const existingLeaves = this.app.workspace.getLeavesOfType(TYPING_GUIDE_VIEW);
+    if (existingLeaves.length === 0) {
+        // Open guide in right pane
+        const leaf = this.app.workspace.getRightLeaf(false);
+        if (leaf) {
+            await leaf.setViewState({
+                type: TYPING_GUIDE_VIEW,
+                active: true
+            });
+        }
+    }
 
-		// This adds a simple command that can be triggered anywhere
+
+	//////////////////////////////////////////////////
+		// Convert selection to plain Greek
 		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
+			id: 'convert-to-greek',
+			name: 'Convert to Greek',
+			editorCallback: (editor) => {
+				const selection = editor.getSelection();
+				if (!selection) return;
+				editor.replaceSelection(this.toGreek(selection));
+			},
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
+
+		// Convert selection to Greek with diacritics
 		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, _view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
+			id: 'convert-to-greek-diacritics',
+			name: 'Convert to Greek (with Diacritics)',
+			editorCallback: (editor) => {
+				const selection = editor.getSelection();
+				if (!selection) return;
+				editor.replaceSelection(this.toGreekWithDiacritics(selection));
+				new Notice("Converted to Greek with diacritics");
+			},
 		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
+
+		// Ribbon icon to toggle live typing
+		const ribbonKeyboard = this.addRibbonIcon('omega', 'Toggle Live Typing', (_evt: MouseEvent) => {
+			this.isLiveTyping = !this.isLiveTyping;
+			new Notice(`Live Typing ${this.isLiveTyping ? "enabled" : "disabled"}`);
+			ribbonKeyboard.setAttribute(
+				"style",
+				this.isLiveTyping ? "color: var(--interactive-accent);" : "color: var(--text-muted);"
+			);
+		});
+
+		// Live typing extension (convert word at space)
+		this.registerEditorExtension([
+			EditorView.updateListener.of((update: ViewUpdate) => {
+				if (!this.isLiveTyping) return;
+				if (!update.docChanged) return;
+
+				update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+					const view = update.view;
+					const text = inserted.toString();
+
+					// Only trigger on space (end of word)
+					if (!text.includes(' ') && !text.includes('\n')) return;
+
+					// Find the start of the current word
+					const cursor = view.state.selection.main.head;
+					const wordStart = view.state.doc.lineAt(cursor).from;
+					const wordText = view.state.sliceDoc(wordStart, cursor);
+
+					const converted = this.toGreekWithDiacritics(wordText);
+
+					if (converted !== wordText) {
+						view.dispatch({
+							changes: { from: wordStart, to: cursor, insert: converted },
+						});
 					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+				});
+			}),
+		]);
 	}
 
 	onunload() {
-
-	}
-
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
+		console.log('GreekTyper plugin unloaded');
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+const TYPING_GUIDE_VIEW = "greek-typer-guide";
+
+export class GreekTyperGuideView extends ItemView {
+	constructor(leaf: WorkspaceLeaf) {
+		super(leaf);
 	}
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
+	getViewType() {
+		return TYPING_GUIDE_VIEW;
 	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+	getDisplayText() {
+		return "Greek Typer Guide";
+	}
+
+	getIcon(): string {
+        return "omega";
+    }
+
+	async onOpen() {
+    const container = this.containerEl;
+    container.empty();
+
+    const html = `
+        <div style="padding: 1rem; font-family: system-ui, sans-serif; line-height: 1.5;">
+            <h2 style="margin-bottom: 1rem; color: var(--interactive-accent); text-align: center;">Greek Typer Key Guide</h2>
+            <p style="text-align: center;">Type the symbol immediately after the letter to apply the mark. Combine marks for polytonic Greek.</p>
+
+            <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 1rem;">
+                <thead>
+                    <tr style="background-color: var(--background-modifier-border);">
+                        <th style="padding: 0.5rem; border: 1px solid var(--background-modifier-border);">Key</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--background-modifier-border);">Effect</th>
+                        <th style="padding: 0.5rem; border: 1px solid var(--background-modifier-border);">Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Accents -->
+                    <tr>
+                        <td>/</td><td>acute</td><td>ά</td>
+                    </tr>
+                    <tr>
+                        <td>\\</td><td>grave</td><td>ὰ</td>
+                    </tr>
+                    <tr>
+                        <td>=</td><td>circumflex</td><td>ᾶ</td>
+                    </tr>
+
+                    <!-- Breathings -->
+                    <tr>
+                        <td>)</td><td>smooth breathing</td><td>ἀ</td>
+                    </tr>
+                    <tr>
+                        <td>(</td><td>rough breathing</td><td>ἁ</td>
+                    </tr>
+
+                    <!-- Other Marks -->
+                    <tr>
+                        <td>|</td><td>iota subscript</td><td>ᾳ</td>
+                    </tr>
+                    <tr>
+                        <td>+</td><td>diaeresis</td><td>ϊ</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); text-align: center;">
+                <strong>Tip:</strong> Combine multiple marks after a letter for polytonic Greek, e.g., <span style="font-weight:bold;">α)/</span> → ἄ.
+            </p>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+
+	async onClose() {
+		// Nothing to clean up
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
-}

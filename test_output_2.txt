@@ -1,0 +1,42 @@
+
+> obsidian-sample-plugin@1.0.0 test
+> jest
+
+ts-jest[config] (WARN) message TS151001: If you have issues related to imports, you should consider setting `esModuleInterop` to `true` in your TypeScript configuration file (usually `tsconfig.json`). See https://blogs.msdn.microsoft.com/typescript/2018/01/31/announcing-typescript-2-7/#easier-ecmascript-module-interoperability for more information.
+FAIL tests/transliteration.test.ts
+  Greek Transliteration
+    toGreek (Plain)
+      ΓêÜ converts basic letters (2 ms)
+      ΓêÜ handles final sigma
+      ΓêÜ handles final sigma with punctuation
+      ΓêÜ keeps unknown characters
+    toGreekWithDiacritics (Polytonic)
+      ΓêÜ converts basic letters (1 ms)
+      ΓêÜ converts accents
+      ΓêÜ converts breathings
+      ΓêÜ converts complex combinations
+      ΓêÜ handles final sigma
+      ├ù handles mixed content (4 ms)
+
+  ΓùÅ Greek Transliteration ΓÇ║ toGreekWithDiacritics (Polytonic) ΓÇ║ handles mixed content
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "╬╡╬╜ ß╝Ç╧ü╧çß┐â"
+    Received: "╬╡╬╜ ß╝Ç╧ü╬╛h|"
+
+       96 |
+       97 |         test('handles mixed content', () => {
+    >  98 |             expect(toGreekWithDiacritics('en a)rxh|')).toBe('╬╡╬╜ ß╝Ç╧ü╧çß┐â');
+          |                                                        ^
+       99 |         });
+      100 |     });
+      101 | });
+
+      at Object.<anonymous> (tests/transliteration.test.ts:98:56)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 9 passed, 10 total
+Snapshots:   0 total
+Time:        0.595 s, estimated 1 s
+Ran all test suites.

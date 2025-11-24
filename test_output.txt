@@ -1,0 +1,93 @@
+
+> obsidian-sample-plugin@1.0.0 test
+> jest
+
+ts-jest[config] (WARN) message TS151001: If you have issues related to imports, you should consider setting `esModuleInterop` to `true` in your TypeScript configuration file (usually `tsconfig.json`). See https://blogs.msdn.microsoft.com/typescript/2018/01/31/announcing-typescript-2-7/#easier-ecmascript-module-interoperability for more information.
+FAIL tests/transliteration.test.ts
+  Greek Transliteration
+    toGreek (Plain)
+      ΓêÜ converts basic letters (3 ms)
+      ├ù handles final sigma (2 ms)
+      ΓêÜ handles final sigma with punctuation
+      ΓêÜ keeps unknown characters (1 ms)
+    toGreekWithDiacritics (Polytonic)
+      ├ù converts basic letters (1 ms)
+      ΓêÜ converts accents (1 ms)
+      ΓêÜ converts breathings
+      ΓêÜ converts complex combinations (1 ms)
+      ├ù handles final sigma
+      ├ù handles mixed content
+
+  ΓùÅ Greek Transliteration ΓÇ║ toGreek (Plain) ΓÇ║ handles final sigma
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "╬║╬┐╧â╬╝╬┐╧é"
+    Received: "c╬┐╧â╬╝╬┐╧é"
+
+      50 |             expect(toGreek('logos')).toBe('╬╗╬┐╬│╬┐╧é'); // wait, my manual logic above might be slightly off or the regex needs to be robust. 
+      51 |             // 's' maps to '╧â'. 'logos' -> '╬╗╬┐╬│╬┐╧â' -> '╬╗╬┐╬│╬┐╧é'
+    > 52 |             expect(toGreek('cosmos')).toBe('╬║╬┐╧â╬╝╬┐╧é');
+         |                                       ^
+      53 |         });
+      54 |
+      55 |         test('handles final sigma with punctuation', () => {
+
+      at Object.<anonymous> (tests/transliteration.test.ts:52:39)
+
+  ΓùÅ Greek Transliteration ΓÇ║ toGreekWithDiacritics (Polytonic) ΓÇ║ converts basic letters
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "╬╗╬┐╬│╬┐╧é"
+    Received: "l╬┐g╬┐s"
+
+      64 |     describe('toGreekWithDiacritics (Polytonic)', () => {
+      65 |         test('converts basic letters', () => {
+    > 66 |             expect(toGreekWithDiacritics('logos')).toBe('╬╗╬┐╬│╬┐╧é');
+         |                                                    ^
+      67 |         });
+      68 |
+      69 |         test('converts accents', () => {
+
+      at Object.<anonymous> (tests/transliteration.test.ts:66:52)
+
+  ΓùÅ Greek Transliteration ΓÇ║ toGreekWithDiacritics (Polytonic) ΓÇ║ handles final sigma
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "╬╗╬┐╬│╬┐╧é"
+    Received: "l╬┐g╬┐s"
+
+      84 |
+      85 |         test('handles final sigma', () => {
+    > 86 |             expect(toGreekWithDiacritics('logos')).toBe('╬╗╬┐╬│╬┐╧é');
+         |                                                    ^
+      87 |         });
+      88 |
+      89 |         test('handles mixed content', () => {
+
+      at Object.<anonymous> (tests/transliteration.test.ts:86:52)
+
+  ΓùÅ Greek Transliteration ΓÇ║ toGreekWithDiacritics (Polytonic) ΓÇ║ handles mixed content
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "╬╡╬╜ ß╝Ç╧ü╧çß┐â"
+    Received: "╬╡n ß╝Çrxh|"
+
+      88 |
+      89 |         test('handles mixed content', () => {
+    > 90 |             expect(toGreekWithDiacritics('en a)rxh|')).toBe('╬╡╬╜ ß╝Ç╧ü╧çß┐â');
+         |                                                        ^
+      91 |         });
+      92 |     });
+      93 | });
+
+      at Object.<anonymous> (tests/transliteration.test.ts:90:56)
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 6 passed, 10 total
+Snapshots:   0 total
+Time:        0.667 s, estimated 1 s
+Ran all test suites.

@@ -35,17 +35,20 @@ export default class GreekTyperPlugin extends Plugin {
 		this.registerView(TYPING_GUIDE_VIEW, (leaf) => new GreekTyperGuideView(leaf, this));
 
 		// Check if the guide is already open
-		const existingLeaves = this.app.workspace.getLeavesOfType(TYPING_GUIDE_VIEW);
-		if (existingLeaves.length === 0) {
-			// Open guide in right pane
-			const leaf = this.app.workspace.getRightLeaf(false);
-			if (leaf) {
-				await leaf.setViewState({
-					type: TYPING_GUIDE_VIEW,
-					active: true
-				});
+		// Check if the guide is already open
+		this.app.workspace.onLayoutReady(async () => {
+			const existingLeaves = this.app.workspace.getLeavesOfType(TYPING_GUIDE_VIEW);
+			if (existingLeaves.length === 0) {
+				// Open guide in right pane
+				const leaf = this.app.workspace.getRightLeaf(false);
+				if (leaf) {
+					await leaf.setViewState({
+						type: TYPING_GUIDE_VIEW,
+						active: true
+					});
+				}
 			}
-		}
+		});
 
 		//////////////////////////////////////////////////
 		// Convert selection to plain Greek

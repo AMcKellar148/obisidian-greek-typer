@@ -1,86 +1,99 @@
-# Obsidian Greek Typer Plugin
+# Greek Typer for Obsidian
 
-A powerful plugin for Obsidian that allows you to type Koine Greek easily using Latin transliteration. It supports both **Phonetic** and **Beta Code** mappings, smart breathing marks, and integrated dictionary lookups.
-
----
+Type polytonic Greek in Obsidian with Latin keys. Choose a **phonetic** scheme (`th` → θ) or standard **Beta Code** (`q` → θ). Accents, breathings, iota subscripts and final sigma are handled for you. You can also look up words in an online dictionary.
 
 ## Features
 
-### ⌨️ Typing & Conversion
-*   **Live Typing**: Automatically converts words to Greek as you type (Disabled by default).
-*   **Selection Conversion**: Convert existing text to Greek (Plain or Polytonic) or back to Latin.
-*   **Two Mapping Modes**:
-    *   **Phonetic**: Intuitive mapping (e.g., `th` → `θ`, `ph` → `φ`).
-    *   **Beta Code**: Standard academic mapping (e.g., `q` → `θ`, `f` → `φ`, `c` → `ξ`).
-*   **Smart 'h'**: Automatically treats an initial `h` before a vowel as a rough breathing mark (e.g., `hodos` → `ὁδός`).
-
-### 📖 Dictionary Lookup
-*   **Integrated View**: Look up Greek words directly within Obsidian using the **Core Web Viewer** plugin.
-*   **Presets**: Quickly switch between **Logeion**, **Blue Letter Bible (Textus Receptus)**, and **Perseus**.
-*   **Context Menu**: Right-click any Greek word to look it up instantly.
-
-### ℹ️ Dynamic Typing Guide
-*   A side pane guide that shows the current key mappings and diacritic codes.
-*   Automatically updates based on your selected mapping mode (Phonetic vs. Beta Code).
-
----
+- **Live typing**: each word turns into Greek when you type a space or start a new line. Code, links, tags and front matter are left alone. Undo brings back what you typed.
+- **Convert a selection** to polytonic Greek, or to Greek letters without diacritics.
+- **Two schemes**: phonetic or Beta Code, plus your own custom keys for any letter.
+- **Smart 'h'**: `hodos` → ὁδος, `ho/ti` → ὅτι, `hoi` → οἱ (phonetic scheme only).
+- **Dictionary lookup** from the command palette or the editor's right-click menu: Logeion, Blue Letter Bible, Perseus, or any URL you choose.
+- **Typing guide** in the sidebar showing your current keys.
 
 ## Usage
 
 ### Commands
-Open the Command Palette (`Ctrl/Cmd + P`) and search for "Greek Typer":
 
-*   **Toggle Live Typing**: Enable/disable automatic conversion while typing.
-*   **Convert to Greek**: Converts selected Latin text to plain Greek letters.
-*   **Convert to Greek (with Diacritics)**: Converts selected text to polytonic Greek.
-*   **Convert to Latin**: Converts Greek text back to Latin (preserves rough breathing as `h`).
-*   **Look up selection in Dictionary**: Opens the dictionary view for the selected word.
-*   **Toggle Beta Code Mapping**: Switch between Phonetic and Beta Code layouts.
-*   **Toggle Smart 'h'**: Enable/disable the smart rough breathing feature.
+Open the command palette (`Ctrl/Cmd + P`) and search for "Greek Typer":
 
-### Key Mappings
+| Command | What it does |
+| --- | --- |
+| Toggle live typing | Turn live typing on or off. You can also select the Ω ribbon icon or the **Greek: on/off** status bar item. |
+| Convert selection to polytonic Greek | Convert the selected text, including diacritics. |
+| Convert selection to Greek letters (no diacritics) | Convert letters only. Diacritic keys are left as typed. |
+| Look up word in dictionary | Look up the selected word, or the word under the cursor. |
+| Open typing guide | Show the key reference in the right sidebar. |
+| Switch between phonetic and Beta Code keys | Change the keyboard scheme. |
+| Toggle smart 'h' rough breathing | Turn smart 'h' on or off. |
 
-#### Diacritics (Common to both modes)
-Type these symbols **after** the vowel:
-*   `/` Acute (ά)
-*   `\` Grave (ὰ)
-*   `=` Circumflex (ᾶ)
-*   `)` Smooth Breathing (ἀ)
-*   `(` Rough Breathing (ἁ)
-*   `|` Iota Subscript (ᾳ)
-*   `+` Diaeresis (ϊ)
+### Letters
 
-#### Phonetic Mode (Default)
-*   `th` → `θ`
-*   `ph` → `φ`
-*   `ch` → `χ`
-*   `ps` → `ψ`
-*   `w` → `ω`
-*   `h` → `η` (unless Smart 'h' is active)
+| Greek | Phonetic | Beta Code | | Greek | Phonetic | Beta Code |
+| --- | --- | --- | --- | --- | --- | --- |
+| α | a | a | | ν | n | n |
+| β | b | b | | ξ | x | c |
+| γ | g | g | | ο | o | o |
+| δ | d | d | | π | p | p |
+| ε | e | e | | ρ | r | r |
+| ζ | z | z | | σ/ς | s | s |
+| η | h | h | | τ | t | t |
+| θ | th | q | | υ | u | u |
+| ι | i | i | | φ | ph | f |
+| κ | k | k | | χ | ch | x |
+| λ | l | l | | ψ | ps | y |
+| μ | m | m | | ω | w | w |
 
-#### Beta Code Mode
-*   `q` → `θ`
-*   `f` → `φ`
-*   `x` → `χ`
-*   `y` → `ψ`
-*   `w` → `ω`
-*   `c` → `ξ`
+Type a capital Latin letter for a capital Greek letter: `Logos` → Λογος, `I)hsou=s` → Ἰησοῦς.
 
----
+### Diacritics
+
+Type these **after** the vowel, in any order:
+
+| Key | Mark | Example |
+| --- | --- | --- |
+| `/` | acute | `a/` → ά |
+| `\` | grave | `a\` → ὰ |
+| `=` | circumflex | `a=` → ᾶ |
+| `)` | smooth breathing | `a)` → ἀ |
+| `(` | rough breathing | `a(` → ἁ |
+| `|` | iota subscript | `a|` → ᾳ |
+| `+` | diaeresis | `i+` → ϊ |
+
+Marks combine: `a)/` → ἄ, `w(=|` → ᾧ. A mark a letter can't take stays as typed (`e=` → ε=), so brackets after consonants stay brackets: `(logos)` → (λογος).
+
+### Tips
+
+- **τη, πη, πσ in phonetic mode**: put `_` between the letters to stop them from forming θ, φ or ψ: `t_h/n` → τήν, `t_h=s` → τῆς.
+- **Smart 'h'**: a word-initial `h` before a vowel or `r` becomes a rough breathing. It goes on the second vowel of a diphthong (`hoi` → οἱ). To start a word with η and a rough breathing, type `hh`: `hhme/ra` → ἡμέρα.
+- **Final sigma** is automatic: σ at the end of a word becomes ς.
 
 ## Settings
 
-*   **Enable Live Typing by Default**: Choose if you want to type in Greek automatically on startup.
-*   **Use Beta Code Mapping**: Toggle between Phonetic and Beta Code layouts.
-*   **Smart 'h' for Rough Breathing**: When enabled, `h` + vowel becomes a rough breathing mark (e.g., `ha` → `ἁ`).
-*   **Dictionary URL**: Set your preferred dictionary. Use `{word}` as a placeholder.
-    *   *Note: Requires the **Web Viewer** core plugin to be enabled.*
-*   **Custom Key Mappings**: Override specific keys to your liking.
+- **Live typing**: on or off.
+- **Keyboard scheme**: phonetic or Beta Code.
+- **Smart 'h' for rough breathing** (phonetic only).
+- **Dictionary** and **Dictionary URL**: choose a preset or enter a URL with `{word}` where the word goes.
+- **Custom keys**: add your own key for any letter, e.g. `q` for θ. The default keys keep working.
 
----
+## Network use
+
+Greek Typer works offline. The only network access is dictionary lookup, which you start yourself. It sends the word you look up to the dictionary website you choose (Logeion by default). Lookups open in Obsidian's **Web viewer** core plugin when it's enabled. Otherwise they open in your browser. Nothing else leaves your device, and there is no telemetry.
 
 ## Installation
 
-1.  Search for "Greek Typer" in the Obsidian Community Plugins browser.
-2.  Click **Install**.
-3.  Click **Enable**.
+Greek Typer isn't in the community plugin browser yet. To install it manually:
+
+1. Download `main.js`, `manifest.json` and `styles.css` from the latest release.
+2. Copy them into `<your vault>/.obsidian/plugins/greek-typer/`.
+3. Reload Obsidian and enable **Greek Typer** in **Settings → Community plugins**.
+
+## Development
+
+```bash
+npm install
+npm run dev     # rebuild on change
+npm run check   # lint (including Obsidian's plugin rules), tests and production build
+```
+
+Source lives in `src/`. The transliteration engine (`src/transliterate.ts`) and the live-typing extension (`src/live-typing.ts`) have no Obsidian dependency and are covered by the tests in `tests/`.

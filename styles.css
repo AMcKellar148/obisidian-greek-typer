@@ -1,8 +1,56 @@
-/*
+/* Live typing indicators (ribbon icon and status bar) */
+.side-dock-ribbon-action.greek-typer-active,
+.greek-typer-status.greek-typer-active {
+	color: var(--interactive-accent);
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Settings */
+.greek-typer-invalid {
+	border-color: var(--text-error);
+}
 
-If your plugin does not need CSS, delete this file.
+/* Typing guide view */
+.greek-typer-guide {
+	line-height: var(--line-height-normal);
+}
 
-*/
+.greek-typer-guide h4 {
+	margin: var(--size-4-4) 0 var(--size-4-2);
+	padding-bottom: var(--size-4-1);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.greek-typer-guide-letters {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(4.5em, 1fr));
+	gap: var(--size-4-1);
+}
+
+.greek-typer-guide-letter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: var(--size-4-1);
+	border-radius: var(--radius-s);
+	background-color: var(--background-secondary);
+}
+
+.greek-typer-guide-greek {
+	font-size: var(--font-ui-large);
+}
+
+.greek-typer-guide-key {
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+}
+
+.greek-typer-guide-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.greek-typer-guide-table td {
+	padding: var(--size-4-1) var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}

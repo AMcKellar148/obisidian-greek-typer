@@ -1,5 +1,7 @@
 import {
 	DEFAULT_SETTINGS,
+	DICTIONARY_PRESETS,
+	dictionaryChoices,
 	findCustomKeyConflict,
 	normalizeSettings,
 	transliterateOptions,
@@ -86,5 +88,24 @@ describe("transliterateOptions", () => {
 	test("maps settings to converter options", () => {
 		const options = transliterateOptions({ ...DEFAULT_SETTINGS, useBetaCode: true, customKeys: { θ: "q" } }, false);
 		expect(options).toEqual({ scheme: "beta", diacritics: false, smartBreathing: true, customKeys: { q: "θ" } });
+	});
+});
+
+describe("dictionaryChoices", () => {
+	test("lists every preset with the default first", () => {
+		const choices = dictionaryChoices({ ...DEFAULT_SETTINGS, dictionaryUrl: DICTIONARY_PRESETS.Wiktionary ?? "" });
+		expect(choices.map((c) => c.name)).toEqual(["Wiktionary", "Logeion", "LSJ", "Perseus", "Blue Letter Bible"]);
+		expect(choices.filter((c) => c.isDefault).map((c) => c.name)).toEqual(["Wiktionary"]);
+	});
+
+	test("includes a custom URL as the default", () => {
+		const choices = dictionaryChoices({ ...DEFAULT_SETTINGS, dictionaryUrl: "https://example.com/{word}" });
+		expect(choices[0]).toEqual({ name: "Custom URL", url: "https://example.com/{word}", isDefault: true });
+		expect(choices).toHaveLength(6);
+	});
+
+	test("skips a custom URL without a placeholder", () => {
+		const choices = dictionaryChoices({ ...DEFAULT_SETTINGS, dictionaryUrl: "https://example.com" });
+		expect(choices.map((c) => c.name)).not.toContain("Custom URL");
 	});
 });

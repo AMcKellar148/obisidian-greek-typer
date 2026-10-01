@@ -1,6 +1,7 @@
-import { App, Editor, Notice, Platform, WorkspaceLeaf } from "obsidian";
+import { App, Editor, Notice, Platform, SuggestModal, WorkspaceLeaf } from "obsidian";
 import type GreekTyperPlugin from "./main";
 import { buildLookupUrl, cleanLookupTerm, wordAt } from "./dictionary";
+import { DictionaryChoice, dictionaryChoices } from "./settings";
 import { containsGreek } from "./transliterate";
 
 const WEB_VIEWER_TYPE = "webviewer";
@@ -41,8 +42,9 @@ async function openInWebViewer(app: App, url: string): Promise<boolean> {
 	return true;
 }
 
-export async function lookupWord(plugin: GreekTyperPlugin, term: string): Promise<void> {
-	const url = buildLookupUrl(plugin.settings.dictionaryUrl, term);
+/** Look up `term` in the default dictionary, or in the one given by `template`. */
+export async function lookupWord(plugin: GreekTyperPlugin, term: string, template = plugin.settings.dictionaryUrl): Promise<void> {
+	const url = buildLookupUrl(template, term);
 	if (!url) {
 		new Notice("The dictionary URL needs a {word} placeholder. Check the Greek Typer settings.");
 		return;
@@ -55,6 +57,32 @@ export async function lookupWord(plugin: GreekTyperPlugin, term: string): Promis
 	window.open(url);
 }
 
+class DictionaryPicker extends SuggestModal<DictionaryChoice> {
+	constructor(private readonly plugin: GreekTyperPlugin, private readonly term: string) {
+		super(plugin.app);
+		this.setPlaceholder(`Look up "${term}" in…`);
+	}
+
+	getSuggestions(query: string): DictionaryChoice[] {
+		const q = query.toLowerCase();
+		return dictionaryChoices(this.plugin.settings).filter((c) => c.name.toLowerCase().includes(q));
+	}
+
+	renderSuggestion(choice: DictionaryChoice, el: HTMLElement): void {
+		el.createDiv({ text: choice.name });
+		if (choice.isDefault) el.createEl("small", { cls: "greek-typer-muted", text: "Default" });
+	}
+
+	onChooseSuggestion(choice: DictionaryChoice): void {
+		void lookupWord(this.plugin, this.term, choice.url);
+	}
+}
+
+/** Ask which dictionary to use, then look up `term` there. */
+export function pickDictionaryAndLookup(plugin: GreekTyperPlugin, term: string): void {
+	new DictionaryPicker(plugin, term).open();
+}
+
 export function registerLookupMenu(plugin: GreekTyperPlugin): void {
 	plugin.registerEvent(
 		plugin.app.workspace.on("editor-menu", (menu, editor) => {
@@ -65,6 +93,12 @@ export function registerLookupMenu(plugin: GreekTyperPlugin): void {
 					.setTitle(`Look up "${term}" in dictionary`)
 					.setIcon("book-open")
 					.onClick(() => lookupWord(plugin, term));
+			});
+			menu.addItem((item) => {
+				item
+					.setTitle("Look up in another dictionary…")
+					.setIcon("library")
+					.onClick(() => pickDictionaryAndLookup(plugin, term));
 			});
 		}),
 	);

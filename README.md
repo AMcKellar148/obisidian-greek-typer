@@ -8,7 +8,7 @@ Type polytonic Greek in Obsidian with Latin keys. Choose a **phonetic** scheme (
 - **Convert a selection** to polytonic Greek, or to Greek letters without diacritics.
 - **Two schemes**: phonetic or Beta Code, plus your own custom keys for any letter.
 - **Smart 'h'**: `hodos` → ὁδος, `ho/ti` → ὅτι, `hoi` → οἱ (phonetic scheme only).
-- **Dictionary lookup** from the command palette or the editor's right-click menu: Logeion, Blue Letter Bible, Perseus, or any URL you choose.
+- **Dictionary lookup** from the command palette or the editor's right-click menu: Logeion, LSJ, Wiktionary, Perseus, Blue Letter Bible, or any URL you choose. Look up in your default dictionary, or pick another one for a single lookup.
 - **Remove diacritics** from a selection (ἐν ἀρχῇ → εν αρχη), handy for searching.
 - **Typing guide** in the sidebar showing your current keys. Select a letter to insert it.
 
@@ -24,7 +24,8 @@ Open the command palette (`Ctrl/Cmd + P`) and search for "Greek Typer":
 | Convert selection to polytonic Greek | Convert the selected text, including diacritics. |
 | Convert selection to Greek letters (no diacritics) | Convert letters only. Diacritic keys are left as typed. |
 | Remove Greek diacritics from selection | Strip accents, breathings, iota subscripts and diaereses. |
-| Look up word in dictionary | Look up the selected word, or the word under the cursor. |
+| Look up word in dictionary | Look up the selected word, or the word under the cursor, in your default dictionary. |
+| Look up word in a chosen dictionary | Pick which dictionary to use for this lookup. |
 | Open typing guide | Show the key reference in the right sidebar. Select a letter to insert it into your note; hold Shift for a capital. |
 | Switch between phonetic and Beta Code keys | Change the keyboard scheme. |
 | Toggle smart 'h' rough breathing | Turn smart 'h' on or off. |
@@ -77,7 +78,7 @@ Marks combine: `a)/` → ἄ, `w(=|` → ᾧ. A mark a letter can't take stays a
 - **Live typing**: on or off.
 - **Keyboard scheme**: phonetic or Beta Code.
 - **Smart 'h' for rough breathing** (phonetic only).
-- **Dictionary** and **Dictionary URL**: choose a preset or enter a URL with `{word}` where the word goes.
+- **Dictionary** and **Dictionary URL**: your default dictionary. Choose a preset (Logeion, LSJ, Wiktionary, Perseus, Blue Letter Bible) or enter a URL with `{word}` where the word goes.
 - **Custom keys**: add your own key for any letter, e.g. `q` for θ. The default keys keep working.
 
 ## Network use

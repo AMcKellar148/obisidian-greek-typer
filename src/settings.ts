@@ -12,9 +12,30 @@ export interface GreekTyperSettings {
 
 export const DICTIONARY_PRESETS: Record<string, string> = {
 	Logeion: "https://logeion.uchicago.edu/{word}",
-	"Blue Letter Bible": "https://www.blueletterbible.org/search/search.cfm?Criteria={word}&t=TR",
+	LSJ: "https://lsj.gr/wiki/{word}",
+	Wiktionary: "https://en.wiktionary.org/wiki/{word}#Ancient_Greek",
 	Perseus: "https://www.perseus.tufts.edu/hopper/morph?l={word}&la=greek",
+	"Blue Letter Bible": "https://www.blueletterbible.org/search/search.cfm?Criteria={word}&t=TR",
 };
+
+export interface DictionaryChoice {
+	name: string;
+	url: string;
+	isDefault: boolean;
+}
+
+/** Every dictionary the user can pick for a one-off lookup, default first. */
+export function dictionaryChoices(settings: GreekTyperSettings): DictionaryChoice[] {
+	const choices = Object.entries(DICTIONARY_PRESETS).map(([name, url]) => ({
+		name,
+		url,
+		isDefault: url === settings.dictionaryUrl,
+	}));
+	if (!choices.some((c) => c.isDefault) && settings.dictionaryUrl.includes("{word}")) {
+		choices.push({ name: "Custom URL", url: settings.dictionaryUrl, isDefault: true });
+	}
+	return choices.sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+}
 
 export const DEFAULT_SETTINGS: GreekTyperSettings = {
 	isLiveTyping: false,

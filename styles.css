@@ -4,6 +4,11 @@
 	color: var(--interactive-accent);
 }
 
+/* Dictionary picker */
+.greek-typer-muted {
+	color: var(--text-muted);
+}
+
 /* Settings */
 .greek-typer-invalid {
 	border-color: var(--text-error);

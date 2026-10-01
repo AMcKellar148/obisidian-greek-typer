@@ -68,7 +68,7 @@ export class GreekTyperSettingTab extends PluginSettingTab {
 		const presetName = Object.keys(DICTIONARY_PRESETS).find((name) => DICTIONARY_PRESETS[name] === settings.dictionaryUrl);
 		new Setting(containerEl)
 			.setName("Dictionary")
-			.setDesc("Lookups open in the Web viewer core plugin when it's enabled, otherwise in your browser. The word you look up is sent to this website.")
+			.setDesc("Used by default. To pick a different one for a single lookup, use the right-click menu or the command palette. Lookups open in the Web viewer core plugin when it's enabled, otherwise in your browser. The word you look up is sent to the dictionary's website.")
 			.addDropdown((dropdown) => {
 				for (const name of Object.keys(DICTIONARY_PRESETS)) dropdown.addOption(name, name);
 				dropdown

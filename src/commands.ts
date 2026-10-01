@@ -1,6 +1,6 @@
 import { Editor, Notice } from "obsidian";
 import type GreekTyperPlugin from "./main";
-import { lookupWord, lookupTermFromEditor } from "./lookup";
+import { lookupWord, lookupTermFromEditor, pickDictionaryAndLookup } from "./lookup";
 import { stripDiacritics } from "./transliterate";
 
 /** Replace each non-empty selection with `transform(selectedText)`. */
@@ -79,6 +79,19 @@ export function registerCommands(plugin: GreekTyperPlugin): void {
 				return;
 			}
 			await lookupWord(plugin, term);
+		},
+	});
+
+	plugin.addCommand({
+		id: "lookup-greek-word-in",
+		name: "Look up word in a chosen dictionary",
+		editorCallback: (editor) => {
+			const term = lookupTermFromEditor(editor);
+			if (!term) {
+				new Notice("Select a word or place the cursor on one.");
+				return;
+			}
+			pickDictionaryAndLookup(plugin, term);
 		},
 	});
 

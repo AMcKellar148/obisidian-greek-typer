@@ -26,13 +26,25 @@
 	gap: var(--size-4-1);
 }
 
+.greek-typer-guide-hint {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
 .greek-typer-guide-letter {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	height: auto;
 	padding: var(--size-4-1);
 	border-radius: var(--radius-s);
 	background-color: var(--background-secondary);
+	box-shadow: none;
+	cursor: var(--cursor);
+}
+
+.greek-typer-guide-letter:hover {
+	background-color: var(--background-modifier-hover);
 }
 
 .greek-typer-guide-greek {

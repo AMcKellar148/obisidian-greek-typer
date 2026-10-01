@@ -1,4 +1,4 @@
-import { transliterate, TransliterateOptions, applyFinalSigma, containsGreek } from "../src/transliterate";
+import { transliterate, TransliterateOptions, applyFinalSigma, containsGreek, stripDiacritics } from "../src/transliterate";
 
 const phonetic: TransliterateOptions = { scheme: "phonetic", diacritics: true, smartBreathing: true };
 const phoneticNoSmartH: TransliterateOptions = { ...phonetic, smartBreathing: false };
@@ -166,10 +166,44 @@ describe("Beta Code", () => {
 		["yuxh/", "ψυχή"],
 		["filo/s", "φιλός"],
 		["cei=nos", "ξεῖνος"],
-		["*A", "*Α"],
 		["A)/NQRWPOS", "ἌΝΘΡΩΠΟΣ"],
 	])("%s → %s", (input, expected) => {
 		expect(transliterate(input, beta)).toBe(expected);
+	});
+
+	describe("* capitals", () => {
+		test.each([
+			["*a", "Α"],
+			["*)/anqrwpos", "Ἄνθρωπος"],
+			["*a)/nqrwpos", "Ἄνθρωπος"],
+			["*)ihsou=s", "Ἰησοῦς"],
+			["*(/omhros", "Ὅμηρος"],
+			["*(rodos", "Ῥοδος"],
+			["*)w|", "ᾨ"],
+			["*qeo/s", "Θεός"],
+			["o( *xristo/s", "ὁ Χριστός"],
+		])("%s → %s", (input, expected) => {
+			expect(transliterate(input, beta)).toBe(expected);
+		});
+
+		test("Markdown bold is not a capital", () => {
+			expect(transliterate("**lo/gos**", beta)).toBe("**λόγος**");
+		});
+
+		test("a lone or invalid * stays as typed", () => {
+			expect(transliterate("*", beta)).toBe("*");
+			expect(transliterate("* a", beta)).toBe("* α");
+			expect(transliterate("*=e", beta)).toBe("*=ε");
+		});
+
+		test("plain mode keeps marks before the letter as typed", () => {
+			expect(transliterate("*a", betaPlain)).toBe("Α");
+			expect(transliterate("*)a", betaPlain)).toBe("*)α");
+		});
+
+		test("* has no special meaning in phonetic mode", () => {
+			expect(transliterate("*a", phonetic)).toBe("*α");
+		});
 	});
 
 	test("phonetic digraphs are not special", () => {
@@ -208,6 +242,23 @@ describe("custom keys", () => {
 
 	test("multi-character custom keys take priority over shorter matches", () => {
 		expect(transliterate("kha/os", { ...phonetic, customKeys: { kh: "χ" } })).toBe("χάος");
+	});
+});
+
+describe("stripDiacritics", () => {
+	test.each([
+		["ἄνθρωπος", "ανθρωπος"],
+		["Ἰησοῦς", "Ιησους"],
+		["ᾧ", "ω"],
+		["ἐν ἀρχῇ ἦν ὁ λόγος", "εν αρχη ην ο λογος"],
+		["ΐ ϋ", "ι υ"],
+		["λόγος", "λογος"],
+	])("%s → %s", (input, expected) => {
+		expect(stripDiacritics(input)).toBe(expected);
+	});
+
+	test("leaves non-Greek text alone", () => {
+		expect(stripDiacritics("café λόγος")).toBe("café λογος");
 	});
 });
 

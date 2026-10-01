@@ -76,10 +76,44 @@ function tryAddMark(token: LetterToken, key: string): boolean {
 	return true;
 }
 
+/** Beta Code capital marker: `*a` → Α, with marks before (`*)/a`) or after (`*a)/`) the letter. */
+const BETA_CAPITAL = "*";
+
+function matchBetaCapital(
+	input: string,
+	at: number,
+	options: TransliterateOptions,
+	matchLetter: (at: number) => LetterToken | null,
+): { token: LetterToken; letterStart: number } | null {
+	// `**bold**` is Markdown, not a capital.
+	if (input[at - 1] === BETA_CAPITAL || input[at + 1] === BETA_CAPITAL) return null;
+
+	let letterStart = at + 1;
+	if (options.diacritics) {
+		while (letterStart < input.length && (input[letterStart] ?? "") in MARKS) letterStart++;
+	}
+	const token = matchLetter(letterStart);
+	if (!token) return null;
+	token.upper = true;
+	for (const key of input.slice(at + 1, letterStart)) {
+		if (!tryAddMark(token, key)) return null;
+	}
+	return { token, letterStart };
+}
+
 function tokenize(input: string, options: TransliterateOptions): Token[] {
 	const table = buildKeyTable(options);
 	const maxKeyLength = Math.max(...Array.from(table.keys(), (k) => k.length));
 	const digraphStarts = new Set(Array.from(table.keys()).filter((k) => k.length > 1).map((k) => k.slice(0, 2)));
+	const matchLetter = (at: number): LetterToken | null => {
+		for (let len = Math.min(maxKeyLength, input.length - at); len > 0; len--) {
+			const raw = input.slice(at, at + len);
+			const letter = table.get(raw.toLowerCase());
+			if (letter) return { kind: "letter", letter, upper: isUpper(raw[0] ?? ""), raw, marks: {} };
+		}
+		return null;
+	};
+
 	const tokens: Token[] = [];
 	let i = 0;
 
@@ -96,13 +130,15 @@ function tokenize(input: string, options: TransliterateOptions): Token[] {
 		}
 
 		let matched: LetterToken | null = null;
-		for (let len = Math.min(maxKeyLength, input.length - i); len > 0; len--) {
-			const raw = input.slice(i, i + len);
-			const letter = table.get(raw.toLowerCase());
-			if (letter) {
-				matched = { kind: "letter", letter, upper: isUpper(raw[0] ?? ""), raw, marks: {} };
-				break;
+		let start = i;
+		if (options.scheme === "beta" && input[i] === BETA_CAPITAL) {
+			const capital = matchBetaCapital(input, i, options, matchLetter);
+			if (capital) {
+				matched = capital.token;
+				start = capital.letterStart;
 			}
+		} else {
+			matched = matchLetter(i);
 		}
 
 		if (!matched) {
@@ -111,7 +147,7 @@ function tokenize(input: string, options: TransliterateOptions): Token[] {
 			continue;
 		}
 
-		i += matched.raw.length;
+		i = start + matched.raw.length;
 		if (options.diacritics) {
 			while (i < input.length && tryAddMark(matched, input[i] ?? "")) i++;
 		}
@@ -181,6 +217,14 @@ export function transliterate(input: string, options: TransliterateOptions): str
 		tokens = applySmartBreathing(tokens, options);
 	}
 	return applyFinalSigma(render(tokens));
+}
+
+/** Remove accents, breathings, iota subscripts and diaereses from Greek letters: ἄνθρωπος → ανθρωπος. */
+export function stripDiacritics(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/([\u0370-\u03FF\u1F00-\u1FFF])[\u0300-\u036F]+/g, "$1")
+		.normalize("NFC");
 }
 
 export function containsGreek(text: string): boolean {

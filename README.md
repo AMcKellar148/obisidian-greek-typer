@@ -9,7 +9,8 @@ Type polytonic Greek in Obsidian with Latin keys. Choose a **phonetic** scheme (
 - **Two schemes**: phonetic or Beta Code, plus your own custom keys for any letter.
 - **Smart 'h'**: `hodos` → ὁδος, `ho/ti` → ὅτι, `hoi` → οἱ (phonetic scheme only).
 - **Dictionary lookup** from the command palette or the editor's right-click menu: Logeion, Blue Letter Bible, Perseus, or any URL you choose.
-- **Typing guide** in the sidebar showing your current keys.
+- **Remove diacritics** from a selection (ἐν ἀρχῇ → εν αρχη), handy for searching.
+- **Typing guide** in the sidebar showing your current keys. Select a letter to insert it.
 
 ## Usage
 
@@ -22,8 +23,9 @@ Open the command palette (`Ctrl/Cmd + P`) and search for "Greek Typer":
 | Toggle live typing | Turn live typing on or off. You can also select the Ω ribbon icon or the **Greek: on/off** status bar item. |
 | Convert selection to polytonic Greek | Convert the selected text, including diacritics. |
 | Convert selection to Greek letters (no diacritics) | Convert letters only. Diacritic keys are left as typed. |
+| Remove Greek diacritics from selection | Strip accents, breathings, iota subscripts and diaereses. |
 | Look up word in dictionary | Look up the selected word, or the word under the cursor. |
-| Open typing guide | Show the key reference in the right sidebar. |
+| Open typing guide | Show the key reference in the right sidebar. Select a letter to insert it into your note; hold Shift for a capital. |
 | Switch between phonetic and Beta Code keys | Change the keyboard scheme. |
 | Toggle smart 'h' rough breathing | Turn smart 'h' on or off. |
 
@@ -45,6 +47,8 @@ Open the command palette (`Ctrl/Cmd + P`) and search for "Greek Typer":
 | μ | m | m | | ω | w | w |
 
 Type a capital Latin letter for a capital Greek letter: `Logos` → Λογος, `I)hsou=s` → Ἰησοῦς.
+
+In Beta Code you can also mark capitals with `*`, the standard Beta Code way. Diacritics can go before the letter (`*)ihsou=s` → Ἰησοῦς) or after it (`*a)/nqrwpos` → Ἄνθρωπος). Because a single `*` before a letter means "capital", use `_` for Markdown italics in Beta Code mode. `**bold**` is unaffected.
 
 ### Diacritics
 

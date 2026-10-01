@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, MarkdownView, Notice, WorkspaceLeaf } from "obsidian";
 import type GreekTyperPlugin from "../main";
 import { defaultKeyFor, GREEK_LETTERS } from "../keymaps";
 import { transliterate } from "../transliterate";
@@ -47,12 +47,25 @@ export class GuideView extends ItemView {
 		el.addClass("greek-typer-guide");
 
 		el.createEl("h4", { text: settings.useBetaCode ? "Beta Code keys" : "Phonetic keys" });
+		el.createEl("p", { cls: "greek-typer-guide-hint", text: "Select a letter to insert it. Hold shift for a capital." });
 		const letters = el.createDiv({ cls: "greek-typer-guide-letters" });
-		for (const letter of GREEK_LETTERS) {
-			const cell = letters.createDiv({ cls: "greek-typer-guide-letter" });
+		const cells: Array<[letter: string, keys: string]> = GREEK_LETTERS.map((letter) => [
+			letter,
+			[defaultKeyFor(scheme, letter), settings.customKeys[letter]].filter(Boolean).join(" / "),
+		]);
+		cells.splice(cells.findIndex(([letter]) => letter === "σ") + 1, 0, ["ς", "final s"]);
+		for (const [letter, keys] of cells) {
+			const cell = letters.createEl("button", {
+				cls: "greek-typer-guide-letter",
+				attr: { "aria-label": `Insert ${letter}`, type: "button" },
+			});
 			cell.createSpan({ cls: "greek-typer-guide-greek", text: letter });
-			const keys = [defaultKeyFor(scheme, letter), settings.customKeys[letter]].filter(Boolean);
-			cell.createSpan({ cls: "greek-typer-guide-key", text: keys.join(" / ") });
+			cell.createSpan({ cls: "greek-typer-guide-key", text: keys });
+			cell.onClickEvent((evt) => {
+				// ς has no capital form; Σ is the capital of both sigmas.
+				const upper = letter === "ς" ? "Σ" : letter.toUpperCase();
+				this.insertIntoNote(evt.shiftKey ? upper : letter);
+			});
 		}
 
 		el.createEl("h4", { text: "Diacritics" });
@@ -68,13 +81,27 @@ export class GuideView extends ItemView {
 		el.createEl("h4", { text: "Tips" });
 		const tips = el.createEl("ul");
 		tips.createEl("li", { text: `Start with a capital for a capital letter: ${this.example("I)hsou=s")}.` });
-		if (!settings.useBetaCode) {
+		if (settings.useBetaCode) {
+			tips.createEl("li", { text: `Or use *, with marks before or after the letter: ${this.example("*)ihsou=s")}. Use _ for Markdown italics.` });
+		} else {
 			if (settings.smartRoughBreathing) {
 				tips.createEl("li", { text: `A word-initial h before a vowel is a rough breathing: ${this.example("ho/ti")}, ${this.example("hoi")}.` });
 			}
 			tips.createEl("li", { text: `Use _ to split th, ph, ch or ps: ${this.example("t_h/n")}.` });
 		}
 		tips.createEl("li", { text: "Final sigma (ς) is added automatically." });
+	}
+
+	/** Insert text into the note the user was last editing, and return focus to it. */
+	private insertIntoNote(text: string): void {
+		const leaf = this.app.workspace.getMostRecentLeaf();
+		const view = leaf?.view;
+		if (!leaf || !(view instanceof MarkdownView) || view.getMode() !== "source") {
+			new Notice("Open a note in editing view to insert letters.");
+			return;
+		}
+		view.editor.replaceSelection(text);
+		this.app.workspace.setActiveLeaf(leaf, { focus: true });
 	}
 
 	private example(input: string): string {

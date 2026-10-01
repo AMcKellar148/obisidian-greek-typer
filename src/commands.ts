@@ -1,11 +1,13 @@
 import { Editor, Notice } from "obsidian";
 import type GreekTyperPlugin from "./main";
 import { lookupWord, lookupTermFromEditor } from "./lookup";
+import { stripDiacritics } from "./transliterate";
 
-function convertSelection(plugin: GreekTyperPlugin, editor: Editor, diacritics: boolean): void {
+/** Replace each non-empty selection with `transform(selectedText)`. */
+function transformSelections(editor: Editor, transform: (text: string) => string): void {
 	const selections = editor.listSelections().filter((s) => s.anchor.line !== s.head.line || s.anchor.ch !== s.head.ch);
 	if (selections.length === 0) {
-		new Notice("Select the text to convert first.");
+		new Notice("Select some text first.");
 		return;
 	}
 	editor.transaction({
@@ -13,7 +15,7 @@ function convertSelection(plugin: GreekTyperPlugin, editor: Editor, diacritics: 
 			const anchorFirst = s.anchor.line < s.head.line || (s.anchor.line === s.head.line && s.anchor.ch <= s.head.ch);
 			const from = anchorFirst ? s.anchor : s.head;
 			const to = anchorFirst ? s.head : s.anchor;
-			return { from, to, text: plugin.convert(editor.getRange(from, to), diacritics) };
+			return { from, to, text: transform(editor.getRange(from, to)) };
 		}),
 	});
 }
@@ -23,13 +25,19 @@ export function registerCommands(plugin: GreekTyperPlugin): void {
 	plugin.addCommand({
 		id: "convert-to-greek",
 		name: "Convert selection to Greek letters (no diacritics)",
-		editorCallback: (editor) => convertSelection(plugin, editor, false),
+		editorCallback: (editor) => transformSelections(editor, (text) => plugin.convert(text, false)),
 	});
 
 	plugin.addCommand({
 		id: "convert-to-greek-diacritics",
 		name: "Convert selection to polytonic Greek",
-		editorCallback: (editor) => convertSelection(plugin, editor, true),
+		editorCallback: (editor) => transformSelections(editor, (text) => plugin.convert(text, true)),
+	});
+
+	plugin.addCommand({
+		id: "remove-diacritics",
+		name: "Remove Greek diacritics from selection",
+		editorCallback: (editor) => transformSelections(editor, stripDiacritics),
 	});
 
 	plugin.addCommand({

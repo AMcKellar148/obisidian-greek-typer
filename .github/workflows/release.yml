@@ -1,0 +1,48 @@
+name: Release
+
+# Runs when a version tag like 1.2.3 is pushed (Obsidian requires tags without a leading "v").
+# Create one with `npm version patch|minor|major`, then `git push --follow-tags`.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check the tag matches manifest.json and package.json
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          manifest_version=$(node -p "require('./manifest.json').version")
+          package_version=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$manifest_version" ] || [ "$tag" != "$package_version" ]; then
+            echo "::error::Tag $tag doesn't match manifest.json ($manifest_version) and package.json ($package_version)."
+            exit 1
+          fi
+          node -e "const v = require('./versions.json'); if (!Object.values(v).includes(require('./manifest.json').minAppVersion)) process.exit(1)" \
+            || { echo "::error::versions.json has no entry for this minAppVersion."; exit 1; }
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --draft \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            main.js manifest.json styles.css

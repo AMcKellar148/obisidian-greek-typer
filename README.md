@@ -4,7 +4,7 @@ Type polytonic Greek in Obsidian with Latin keys. Choose a **phonetic** scheme (
 
 ## Features
 
-- **Live typing**: each word turns into Greek when you type a space or start a new line. Code, links, tags and front matter are left alone. Undo brings back what you typed.
+- **Live typing**: each word you type turns into Greek when you type a space or press Enter. Code, links, tags and front matter are left alone, and so is pasted text. Undo brings back the Latin, and it stays Latin when you carry on typing.
 - **Convert a selection** to polytonic Greek, or to Greek letters without diacritics.
 - **Two schemes**: phonetic or Beta Code, plus your own custom keys for any letter.
 - **Smart 'h'**: `hodos` → ὁδος, `ho/ti` → ὅτι, `hoi` → οἱ (phonetic scheme only).

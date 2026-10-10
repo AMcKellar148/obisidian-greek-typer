@@ -102,3 +102,11 @@ npm run check   # lint (including Obsidian's plugin rules), tests and production
 ```
 
 Source lives in `src/`. The transliteration engine (`src/transliterate.ts`) and the live-typing extension (`src/live-typing.ts`) have no Obsidian dependency and are covered by the tests in `tests/`.
+
+### Releasing
+
+1. Make sure `main` is up to date and the working tree is clean.
+2. Run `npm version patch` (or `minor` / `major`). This bumps the version in `package.json`, `manifest.json` and `versions.json`, commits, and creates a matching tag.
+3. Run `git push --follow-tags`.
+4. The **Release** GitHub Action checks that the tag matches the manifest, runs lint, tests and the build, and creates a draft release with `main.js`, `manifest.json` and `styles.css` attached.
+5. Review the draft on GitHub and select **Publish**.
